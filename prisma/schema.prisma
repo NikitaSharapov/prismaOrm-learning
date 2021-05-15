@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@10.20.7.250:5432/ClubForTest?schema=public"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model device {
+  id       Int      @id @default(autoincrement())
+  uuid     String   @db.Uuid
+  mac      String   @db.VarChar(255)
+  ipv4     String   @db.Inet
+  ipv6     String   @db.Inet
+  groups   group[]
+  disk     disk[]
+}
+
+model group {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  devices  device[]
+}
+
+model association {
+  id       Int      @id @default(autoincrement())
+  lunid    Int      @db.Integer
+  target target @relation(fields: [targetId], references: [id])
+  targetId Int      @db.Integer
+  extent extent @relation(fields: [targetId], references: [id])
+  extentId Int      @db.Integer
+  disk     disk[]
+}
+
+model disk {
+  id       Int      @id @default(autoincrement())
+  bootable Boolean  @db.Boolean
+  enabled  Boolean  @db.Boolean
+  priority Int      @db.Integer
+  name     String   @db.VarChar(255)
+  association association @relation(fields: [associationId], references: [id])
+  associationId Int
+  device device @relation(fields: [deviceId], references: [id])
+  deviceId Int
+}
+
+model extent {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  association association[]
+}
+
+model target {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  association association[]
+}
